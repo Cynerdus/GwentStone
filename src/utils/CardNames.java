@@ -22,4 +22,6 @@ public final class CardNames {
     public static final String EMPRESS_THORINA = "Empress Thorina";
     public static final String KING_MUDFACE = "King Mudface";
     public static final String GENERAL_KOCIORAW = "General Kocioraw";
+
+    private CardNames() { }
 }

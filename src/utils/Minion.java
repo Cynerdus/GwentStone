@@ -1,31 +1,41 @@
 package utils;
 
-import fileio.CardInput;
-
 public class Minion extends Card {
 
     private int health;
 
     private int attackDamage;
 
-    public Minion(int health, int attackDamage) {
+    public Minion(final int health, final int attackDamage) {
         this.health = health;
         this.attackDamage = attackDamage;
     }
 
+    /**
+     *  getting the card's health
+     */
     public int getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    /**
+     *  setting the card's health
+     */
+    public void setHealth(final int health) {
         this.health = health;
     }
 
+    /**
+     *  getting the attack damage
+     */
     public int getAttackDamage() {
         return attackDamage;
     }
 
-    public void setAttackDamage(int attackDamage) {
+    /**
+     *  setting the attack damage
+     */
+    public void setAttackDamage(final int attackDamage) {
         this.attackDamage = attackDamage;
     }
 }

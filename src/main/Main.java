@@ -69,7 +69,6 @@ public final class Main {
 
         ArrayNode output = objectMapper.createArrayNode();
 
-        //TODO add here the entry point to your implementation
         GameManager gameManager = new GameManager(inputData, output);
         output = gameManager.generateOutput();
 

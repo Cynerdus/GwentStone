@@ -21,56 +21,92 @@ public class Player {
     private ArrayList<Card> cardsInFrontRow;
     private ArrayList<Card> cardsInBackRow;
 
-    public Player() {}
+    public Player() { }
 
+    /**
+     *  getting the number of games played
+     */
     public int getGamesPlayed() {
         return gamesPlayed;
     }
 
-    public void setGamesPlayed(int gamesPlayed) {
+    /**
+     *  setting the number of games played
+     */
+    public void setGamesPlayed(final int gamesPlayed) {
         this.gamesPlayed = gamesPlayed;
     }
 
+    /**
+     *  getting the number of cards in current deck
+     */
     public int getCardsInDeckCount() {
         return cardsInDeckCount;
     }
 
-    public void setCardsInDeckCount(int cardsInDeckCounts) {
+    /**
+     *  setting the number of cards in current deck
+     */
+    public void setCardsInDeckCount(final int cardsInDeckCounts) {
         this.cardsInDeckCount = cardsInDeckCounts;
     }
 
+    /**
+     *  getting the number of decks
+     */
     public int getDeckCount() {
         return deckCount;
     }
 
-    public void setDeckCount(int deckCount) {
+    /**
+     *  setting the number of decks
+     */
+    public void setDeckCount(final int deckCount) {
         this.deckCount = deckCount;
     }
 
+    /**
+     *  getting the index for the current deck
+     */
     public int getCurrentDeckIndex() {
         return currentDeckIndex;
     }
 
-    public void setCurrentDeckIndex(int currentDeckIndex) {
+    /**
+     *  setting the index for the current deck
+     */
+    public void setCurrentDeckIndex(final int currentDeckIndex) {
         this.currentDeckIndex = currentDeckIndex;
     }
 
+    /**
+     *  getting the current deck
+     */
     public ArrayList<Card> getCurrentDeck() {
         return currentDeck;
     }
 
-    public void setCurrentDeck(ArrayList<CardInput> currentDeck) {
+    /**
+     *  setting the current deck
+     */
+    public void setCurrentDeck(final ArrayList<CardInput> currentDeck) {
         this.currentDeck = new ArrayList<Card>();
         for (CardInput card : currentDeck) {
             this.currentDeck.add(getParsedCard(card));
         }
     }
 
+    /**
+     *  getting the list of decks
+     */
     public ArrayList<ArrayList<Card>> getDeckList() {
         return deckList;
     }
 
-    public void setDeckList(ArrayList<ArrayList<CardInput>> deckList) {
+    /**
+     *  setting the list of decks
+     */
+    public void setDeckList(final ArrayList<ArrayList<CardInput>> deckList) {
         this.deckList = new ArrayList<ArrayList<Card>>();
         for (ArrayList<CardInput> deck : deckList) {
             ArrayList<Card> parsedDeck = new ArrayList<>();
@@ -83,122 +119,146 @@ public class Player {
         }
     }
 
+    /**
+     *  getting the current hand of cards
+     */
     public ArrayList<Card> getCardsInHand() {
         return cardsInHand;
     }
 
-    public void setCardsInHand(ArrayList<CardInput> cardsInHand) {
+    /**
+     *  setting the current hand of cards
+     */
+    public void setCardsInHand(final ArrayList<CardInput> cardsInHand) {
         this.cardsInHand = new ArrayList<Card>();
         for (CardInput card : cardsInHand) {
             this.cardsInHand.add(getParsedCard(card));
         }
     }
 
+    /**
+     *  getting the front row cards
+     */
     public ArrayList<Card> getCardsInFrontRow() {
         return cardsInFrontRow;
     }
 
-    public void setCardsInFrontRow(ArrayList<CardInput> cardsInFrontRow) {
+    /**
+     *  setting the front row cards
+     */
+    public void setCardsInFrontRow(final ArrayList<CardInput> cardsInFrontRow) {
         this.cardsInFrontRow = new ArrayList<Card>();
         for (CardInput card : cardsInFrontRow) {
             this.cardsInFrontRow.add(getParsedCard(card));
         }
     }
 
+    /**
+     *  getting the back row cards
+     */
     public ArrayList<Card> getCardsInBackRow() {
         return cardsInBackRow;
     }
 
-    public void setCardsInBackRow(ArrayList<CardInput> cardsInBackRow) {
+    /**
+     *  setting the back row cards
+     */
+    public void setCardsInBackRow(final ArrayList<CardInput> cardsInBackRow) {
         this.cardsInBackRow = new ArrayList<Card>();
         for (CardInput card : cardsInBackRow) {
             this.cardsInBackRow.add(getParsedCard(card));
         }
     }
 
+    /**
+     *  getting current hero
+     */
     public Card getCurrentHero() {
         return currentHero;
     }
 
-    public void setCurrentHero(CardInput currentHero) {
+    /**
+     *  setting current hero
+     */
+    public void setCurrentHero(final CardInput currentHero) {
         this.currentHero = getParsedCard(currentHero);
     }
 
-    public void addCardInHand(CardInput card) {
+    /**
+     *  adding a card in the hand
+     */
+    public void addCardInHand(final CardInput card) {
         cardsInHand.add(getParsedCard(card));
     }
 
-    public void removeCardFromHand(CardInput card) {
+    /**
+     *  removing a card from the hand
+     */
+    public void removeCardFromHand(final CardInput card) {
         cardsInHand.remove(getParsedCard(card));
     }
 
-    public void removeCardFromDeck(int index) {
+    /**
+     *  removing a card from the current deck
+     */
+    public void removeCardFromDeck(final int index) {
         currentDeck.remove(index);
     }
 
-    public void shuffleDeck(String seed) {
+    /**
+     *  randomising the deck cards order
+     */
+    public void shuffleDeck(final String seed) {
         Random random = new Random(Long.parseLong(seed));
         Collections.shuffle(currentDeck, random);
     }
 
-    public int getCardType(String name) {
-        int type = 0;
+    /**
+     *  getting the card's type
+     *  1 = MINION
+     *  2 = ENVIRONMENT
+     *  3 = HERO
+     */
+    public int getCardType(final String name) {
+        int type;
         switch (name) {
             case CardNames.SENTINEL:
-                type = 1;
-                break;
-            case CardNames.BERSERKER:
-                type = 1;
-                break;
             case CardNames.GOLIATH:
-                type = 1;
-                break;
+            case CardNames.BERSERKER:
             case CardNames.WARDEN:
-                type = 1;
-                break;
             case CardNames.THE_RIPPER:
-                type = 1;
-                break;
             case CardNames.MIRAJ:
-                type = 1;
-                break;
             case CardNames.THE_CURSED_ONE:
-                type = 1;
-                break;
             case CardNames.DISCIPLE:
-                type = 1;
+                type = Constants.ONE;
                 break;
-            case CardNames.FIRESTORM:L:
-            type = 2;
-                break;
+            case CardNames.FIRESTORM:
             case CardNames.WINTERFELL:
-                type = 2;
-                break;
             case CardNames.HEART_HOUND:
-                type = 2;
+                type = Constants.TWO;
                 break;
             case CardNames.LORD_ROYCE:
-                type = 3;
-                break;
             case CardNames.EMPRESS_THORINA:
-                type = 3;
-                break;
             case CardNames.KING_MUDFACE:
-                type = 3;
-                break;
             case CardNames.GENERAL_KOCIORAW:
-                type = 3;
+                type = Constants.THREE;
                 break;
+            default:
+                type = Constants.ZERO;
         }
 
         return type;
     }
 
-    public Card getParsedCard(CardInput card) {
+    /**
+     *  parsing a card from CardInput to Card
+     */
+    public Card getParsedCard(final CardInput card) {
         Card parsedCard;
 
         int cardType = getCardType(card.getName());
-        parsedCard = (cardType == 1) ? new Minion(card.getHealth(), card.getAttackDamage()) : (cardType == 2) ? new Environment() : new Hero();
+        parsedCard = (cardType == 1) ? new Minion(card.getHealth(), card.getAttackDamage())
+                   : (cardType == 2) ? new Environment() : new Hero();
 
         parsedCard.setName(card.getName());
         parsedCard.setMana(card.getMana());
