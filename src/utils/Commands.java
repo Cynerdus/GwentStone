@@ -17,5 +17,8 @@ public final class Commands {
     public static final String GET_PLAYER_ONE_WINS = "getPlayerOneWins";
     public static final String GET_PLAYER_TWO_WINS = "getPlayerTwoWins";
 
+    public static final String END_PLAYER_TURN = "endPlayerTurn";
+    public static final String PLACE_CARD = "placeCard";
+
     private Commands() { }
 }

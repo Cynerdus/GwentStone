@@ -5,6 +5,10 @@ import java.util.ArrayList;
 public abstract class Card {
     private int mana;
 
+    private int health;
+
+    private int attackDamage;
+
     private String description;
 
     private ArrayList<String> colors;
@@ -28,6 +32,36 @@ public abstract class Card {
     /**
      *  getting a card's description
      */
+
+
+    /**
+     *  getting the card's health
+     */
+    public int getHealth() {
+        return health;
+    }
+
+    /**
+     *  setting the card's health
+     */
+    public void setHealth(final int health) {
+        this.health = health;
+    }
+
+    /**
+     *  getting the attack damage
+     */
+    public int getAttackDamage() {
+        return attackDamage;
+    }
+
+    /**
+     *  setting the attack damage
+     */
+    public void setAttackDamage(final int attackDamage) {
+        this.attackDamage = attackDamage;
+    }
+
     public String getDescription() {
         return description;
     }
