@@ -15,6 +15,8 @@ public abstract class Card {
 
     private String name;
 
+    private boolean stunned = false;
+
     /**
      *  getting the card's mana
      */
@@ -99,5 +101,13 @@ public abstract class Card {
      */
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public boolean isStunned() {
+        return stunned;
+    }
+
+    public void setStunned(boolean stunned) {
+        this.stunned = stunned;
     }
 }

@@ -384,8 +384,7 @@
           "command": "endPlayerTurn"
         },
         {
-          "command": "getCardsInHand",
-          "playerIdx": 2
+          "command": "getCardsInHand",          "playerIdx": 2
         },
         {
           "command": "getCardsInHand",

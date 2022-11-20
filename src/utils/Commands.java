@@ -19,6 +19,7 @@ public final class Commands {
 
     public static final String END_PLAYER_TURN = "endPlayerTurn";
     public static final String PLACE_CARD = "placeCard";
+    public static final String USE_ENVIRONMENT_CARD = "useEnvironmentCard";
 
     private Commands() { }
 }

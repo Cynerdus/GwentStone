@@ -129,13 +129,12 @@ public class Player {
      *  setting the list of decks
      */
     public void setDeckList(final ArrayList<ArrayList<CardInput>> deckList) {
-        this.deckList = new ArrayList<ArrayList<Card>>();
+        this.deckList = new ArrayList<>();
         for (ArrayList<CardInput> deck : deckList) {
             ArrayList<Card> parsedDeck = new ArrayList<>();
 
-            for (CardInput card : deck) {
+            for (CardInput card : deck)
                 parsedDeck.add(getParsedCard(card));
-            }
 
             this.deckList.add(parsedDeck);
         }
@@ -156,7 +155,7 @@ public class Player {
      *  setting the current hand of cards
      */
     public void setCardsInHand(final ArrayList<CardInput> cardsInHand) {
-        this.cardsInHand = new ArrayList<Card>();
+        this.cardsInHand = new ArrayList<>();
         for (CardInput card : cardsInHand) {
             this.cardsInHand.add(getParsedCard(card));
         }
@@ -177,7 +176,7 @@ public class Player {
      *  setting the front row cards
      */
     public void setCardsInFrontRow(final ArrayList<CardInput> cardsInFrontRow) {
-        this.cardsInFrontRow = new ArrayList<Card>();
+        this.cardsInFrontRow = new ArrayList<>();
         for (CardInput card : cardsInFrontRow) {
             this.cardsInFrontRow.add(getParsedCard(card));
         }
@@ -192,20 +191,6 @@ public class Player {
      */
     public ArrayList<Card> getCardsInBackRow() {
         return cardsInBackRow;
-    }
-
-    /**
-     *  setting the back row cards
-     */
-    public void setCardsInBackRow(final ArrayList<CardInput> cardsInBackRow) {
-        this.cardsInBackRow = new ArrayList<Card>();
-        for (CardInput card : cardsInBackRow) {
-            this.cardsInBackRow.add(getParsedCard(card));
-        }
-    }
-
-    public void setCardsInBackRow2(final ArrayList<Card> cardsInBackRow) {
-        this.cardsInBackRow = cardsInBackRow;
     }
 
     /**
@@ -228,37 +213,33 @@ public class Player {
             currentDeck.remove(0);
         }
     }
-    public void removeCardFromHand(final Card card) {
-        if (!cardsInHand.isEmpty() && cardsInHand.contains(card)
-            && mana >= card.getMana()) {
-            subtractMana(card.getMana());
-            cardsInHand.remove(card);
-        }
-    }
 
     /**
      *
      * @param index of removed card
      */
     public void removeCardFromHand(final int index) {
-        if (!cardsInHand.isEmpty() && cardsInHand.size() > index
-            && mana >= cardsInHand.get(index).getMana()) {
-            subtractMana(cardsInHand.get(index).getMana());
-            String cardName = cardsInHand.get(index).getName();
+        cardsInHand.remove(index);
+    }
 
-            if (isCardEligibleForFrontRow(cardName))
-                cardsInFrontRow.add(cardsInHand.get(index));
-
-            if (isCardEligibleForBackRow(cardName))
-                cardsInBackRow.add(cardsInHand.get(index));
-
-            System.out.println("Placed card " + cardsInHand.get(index).getName() + ".");
-            cardsInHand.remove(index);
+    public void placeCardWithIndex(final int index) {
+        if (cardsInHand.isEmpty() || cardsInHand.size() <= index)
             return;
-        }
 
-        if (!cardsInHand.isEmpty() && cardsInHand.size() > index)
-            System.out.println("Not enough mana! Current: " + mana + " | Required: " + cardsInHand.get(index).getMana());
+        Card card = cardsInHand.get(index);
+
+        String cardName = card.getName();
+        if (isCardEligibleForFrontRow(cardName))
+            cardsInFrontRow.add(card);
+
+        if (isCardEligibleForBackRow(cardName))
+            cardsInBackRow.add(card);
+
+        subtractMana(card.getMana());
+
+        System.out.println("Placed card " + card.getName() + ".");
+
+        removeCardFromHand(index);
     }
 
     public boolean isCardEligibleForFrontRow(String cardName) {
@@ -290,6 +271,43 @@ public class Player {
             currentDeck.remove(index);
     }
 
+    public void useEnvironmentCard(Card card, ArrayList<Card> affectedRow, int row) {
+
+        switch (card.getName()) {
+            case CardNames.WINTERFELL -> {
+                for (Card affectedCard : affectedRow)
+                    affectedCard.setStunned(true);
+            }
+            case CardNames.FIRESTORM -> {
+                for (Card affectedCard : affectedRow)
+                    affectedCard.setHealth(affectedCard.getHealth() - 1);
+
+                affectedRow.removeIf(affectedCard -> affectedCard.getHealth() <= 0);
+            }
+            case CardNames.HEART_HOUND -> {
+                Card bestMinionOutThere = new Minion();
+                int thisDudesHealth = 0;
+
+                for (Card affectedCard : affectedRow) {
+                    if (getCardType(affectedCard.getName()) == 1) {
+                        if (affectedCard.getHealth() > thisDudesHealth) {
+                            thisDudesHealth = affectedCard.getHealth();
+                            bestMinionOutThere = affectedCard;
+                        }
+                    }
+                }
+
+                ArrayList<Card> newRowForMinion = (row == 0) ? this.cardsInBackRow : this.cardsInFrontRow;
+                newRowForMinion.add(bestMinionOutThere);
+                affectedRow.remove(bestMinionOutThere);
+
+            }
+        }
+
+        subtractMana(card.getMana());
+        getCardsInHand().remove(card);
+    }
+
     /**
      *  randomising the deck cards order
      */
@@ -305,34 +323,29 @@ public class Player {
      *  3 = HERO
      */
     public int getCardType(final String name) {
-        int type;
-        switch (name) {
-            case CardNames.SENTINEL:
-            case CardNames.GOLIATH:
-            case CardNames.BERSERKER:
-            case CardNames.WARDEN:
-            case CardNames.THE_RIPPER:
-            case CardNames.MIRAJ:
-            case CardNames.THE_CURSED_ONE:
-            case CardNames.DISCIPLE:
-                type = Constants.ONE;
-                break;
-            case CardNames.FIRESTORM:
-            case CardNames.WINTERFELL:
-            case CardNames.HEART_HOUND:
-                type = Constants.TWO;
-                break;
-            case CardNames.LORD_ROYCE:
-            case CardNames.EMPRESS_THORINA:
-            case CardNames.KING_MUDFACE:
-            case CardNames.GENERAL_KOCIORAW:
-                type = Constants.THREE;
-                break;
-            default:
-                type = Constants.ZERO;
-        }
+        return switch (name) {
+            case
+        CardNames.SENTINEL,             CardNames.GOLIATH,
 
-        return type;
+    CardNames.BERSERKER, CardNames.WARDEN, CardNames.THE_RIPPER,
+
+    CardNames.MIRAJ, CardNames.THE_CURSED_ONE, CardNames.DISCIPLE ->
+
+     Constants.ONE; case CardNames.FIRESTORM, CardNames.WINTERFELL,
+
+        CardNames.HEART_HOUND -> Constants.TWO; case /*uwuwuw*/
+
+            CardNames.LORD_ROYCE, CardNames.KING_MUDFACE,
+
+                CardNames.EMPRESS_THORINA,  /*uwu*/
+
+                    CardNames.GENERAL_KOCIORAW ->
+
+                        Constants.THREE;
+
+                            default ->
+                          Constants.ZERO;
+        };
     }
 
     /**
@@ -353,5 +366,17 @@ public class Player {
         parsedCard.setColors(card.getColors());
 
         return parsedCard;
+    }
+
+    public void removeStunFromCards() {
+        for (Card card : cardsInBackRow)
+            card.setStunned(false);
+        for (Card card : cardsInFrontRow)
+            card.setStunned(false);
+    }
+
+    public boolean checkRowStatus(String row) {
+        return (row.matches("backRow") ? cardsInBackRow.size() == Constants.FIVE :
+                                                cardsInFrontRow.size() == Constants.FIVE);
     }
 }
