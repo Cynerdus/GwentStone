@@ -147,7 +147,7 @@ public abstract class Card {
      * @param hasAttackedThisTurn       true        if the card has attacked once this turn
  *                                      false       otherwise
      */
-    public void setHasAttackedThisTurn(boolean hasAttackedThisTurn) {
+    public void setHasAttackedThisTurn(final boolean hasAttackedThisTurn) {
         this.hasAttackedThisTurn = hasAttackedThisTurn;
     }
 }

@@ -6,7 +6,12 @@ public class AbilityManager {
 
     public AbilityManager() { }
 
-    public void weakKnees(Card ripper, Card victim) {
+    /**
+     *
+     * @param ripper    The Ripper
+     * @param victim    enemy card
+     */
+    public void weakKnees(final Card ripper, final Card victim) {
         victim.setAttackDamage((victim.getAttackDamage() > Constants.TWO)
                             ? (victim.getAttackDamage() - Constants.TWO)
                             : Constants.ZERO);
@@ -14,7 +19,12 @@ public class AbilityManager {
         ripper.setHasAttackedThisTurn(true);
     }
 
-    public void skyjack(Card miraj, Card victim) {
+    /**
+     *
+     * @param miraj     Miraj
+     * @param victim    enemy card
+     */
+    public void skyjack(final Card miraj, final Card victim) {
         int health = miraj.getHealth();
         miraj.setHealth(victim.getHealth());
         victim.setHealth(health);
@@ -22,7 +32,16 @@ public class AbilityManager {
         miraj.setHasAttackedThisTurn(true);
     }
 
-    public void shapeshift(Card cursed, Card victim, ArrayList<Card> affectedRow) {
+    /**
+     *
+     * @param cursed        The Cursed One
+     * @param victim        enemy card
+     * @param affectedRow   enemy row
+     */
+    public void shapeshift(final Card cursed,
+                           final Card victim,
+                           final ArrayList<Card> affectedRow) {
+
         int health = victim.getHealth();
         victim.setHealth(victim.getAttackDamage());
         victim.setAttackDamage(health);
@@ -34,13 +53,23 @@ public class AbilityManager {
         cursed.setHasAttackedThisTurn(true);
     }
 
-    public void godsPlan(Card disciple, Card ally) {
+    /**
+     *
+     * @param disciple  Disciple card
+     * @param ally      card to boost
+     */
+    public void godsPlan(final Card disciple, final Card ally) {
         ally.setHealth(ally.getHealth() + 2);
 
         disciple.setHasAttackedThisTurn(true);
     }
 
-    public void subZero(Card hero, ArrayList<Card> affectedRow) {
+    /**
+     *
+     * @param hero          Lord Royce
+     * @param affectedRow   enemy row
+     */
+    public void subZero(final Card hero, final ArrayList<Card> affectedRow) {
         Card maxAttackCard = new Minion();
         maxAttackCard.setAttackDamage(-1);
 
@@ -54,7 +83,12 @@ public class AbilityManager {
         hero.setHasAttackedThisTurn(true);
     }
 
-    public void lowBlow(Card hero, ArrayList<Card> affectedRow) {
+    /**
+     *
+     * @param hero          Empress Thorina
+     * @param affectedRow   enemy row
+     */
+    public void lowBlow(final Card hero, final ArrayList<Card> affectedRow) {
         Card maxHealthCard = new Minion();
         maxHealthCard.setHealth(-1);
 
@@ -68,7 +102,12 @@ public class AbilityManager {
         hero.setHasAttackedThisTurn(true);
     }
 
-    public void earthBorn(Card hero, ArrayList<Card> affectedRow) {
+    /**
+     *
+     * @param hero          Kind Mudface
+     * @param affectedRow   own row
+     */
+    public void earthBorn(final Card hero, final ArrayList<Card> affectedRow) {
         for (Card card : affectedRow) {
             card.setHealth(card.getHealth() + 1);
         }
@@ -76,7 +115,12 @@ public class AbilityManager {
         hero.setHasAttackedThisTurn(true);
     }
 
-    public void bloodThirst(Card hero, ArrayList<Card> affectedRow) {
+    /**
+     *
+     * @param hero          General Cioara
+     * @param affectedRow   own row
+     */
+    public void bloodThirst(final Card hero, final ArrayList<Card> affectedRow) {
         for (Card card : affectedRow) {
             card.setAttackDamage(card.getAttackDamage() + 1);
         }

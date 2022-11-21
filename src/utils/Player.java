@@ -28,7 +28,7 @@ public class Player {
 
     /**
      *
-     * @return player's mana
+     * @return          player's mana
      */
     public int getMana() {
         return mana;
@@ -36,7 +36,7 @@ public class Player {
 
     /**
      *
-     * @param mana player's mana
+     * @param mana      player's mana
      */
     public void setMana(final int mana) {
         this.mana = mana;
@@ -52,13 +52,17 @@ public class Player {
         mana += manaIncrement;
     }
 
+    /**
+     *
+     * @param manaIncrement         mana increment
+     */
     public void setManaIncrement(final int manaIncrement) {
         this.manaIncrement = manaIncrement;
     }
 
     /**
      *
-     * @param consumedMana mana to be subtracted
+     * @param consumedMana          mana to be subtracted
      */
     public void subtractMana(final int consumedMana) {
         this.mana -= consumedMana;
@@ -66,7 +70,7 @@ public class Player {
 
     /**
      *
-     * @return the number of game sessions
+     * @return                      the number of game sessions
      */
     public int getGamesPlayed() {
         return gamesPlayed;
@@ -74,7 +78,7 @@ public class Player {
 
     /**
      *
-     * @param gamesPlayed the number of games sessions
+     * @param gamesPlayed           the number of games sessions
      */
     public void setGamesPlayed(final int gamesPlayed) {
         this.gamesPlayed = gamesPlayed;
@@ -82,7 +86,7 @@ public class Player {
 
     /**
      *
-     * @param cardsInDeckCounts number of cards per deck
+     * @param cardsInDeckCounts     number of cards per deck
      */
     public void setCardsInDeckCount(final int cardsInDeckCounts) {
         this.cardsInDeckCount = cardsInDeckCounts;
@@ -90,7 +94,7 @@ public class Player {
 
     /**
      *
-     * @param deckCount number of decks
+     * @param deckCount             number of decks
      */
     public void setDeckCount(final int deckCount) {
         this.deckCount = deckCount;
@@ -98,7 +102,7 @@ public class Player {
 
     /**
      *
-     * @return the index of the current deck
+     * @return                      the index of the current deck
      */
     public int getCurrentDeckIndex() {
         return currentDeckIndex;
@@ -106,7 +110,7 @@ public class Player {
 
     /**
      *
-     * @param currentDeckIndex the index of the current deck
+     * @param currentDeckIndex      the index of the current deck
      */
     public void setCurrentDeckIndex(final int currentDeckIndex) {
         this.currentDeckIndex = currentDeckIndex;
@@ -114,7 +118,7 @@ public class Player {
 
     /**
      *
-     * @return the current deck
+     * @return                      the current deck
      */
     public ArrayList<Card> getCurrentDeck() {
         return currentDeck;
@@ -122,7 +126,7 @@ public class Player {
 
     /**
      *
-     * @param currentDeck the current deck in Card format
+     * @param currentDeck           the current deck in Card format
      */
     public void setCurrentDeck(final ArrayList<Card> currentDeck) {
         this.currentDeck = currentDeck;
@@ -130,7 +134,7 @@ public class Player {
 
     /**
      *
-     * @return the list of decks in Card format
+     * @return                      the list of decks in Card format
      */
     public ArrayList<ArrayList<Card>> getDeckList() {
         return deckList;
@@ -140,7 +144,7 @@ public class Player {
      * the method will take the deck list in CardInput format
      * and convert it to list of lists of Card
      *
-     * @param deckList the list of decks in CardInput format
+     * @param deckList      the list of decks in CardInput format
      */
     public void setDeckList(final ArrayList<ArrayList<CardInput>> deckList) {
         this.deckList = new ArrayList<>();
@@ -155,6 +159,10 @@ public class Player {
         }
     }
 
+    /**
+     * method to reset the active lists
+     * at the beginning of each session
+     */
     public void resetCards() {
         cardsInHand = new ArrayList<>();
         cardsInFrontRow = new ArrayList<>();
@@ -163,7 +171,7 @@ public class Player {
 
     /**
      *
-     * @return the list of cards in the player's hand
+     * @return      the list of cards in the player's hand
      */
     public ArrayList<Card> getCardsInHand() {
         return cardsInHand;
@@ -171,7 +179,7 @@ public class Player {
 
     /**
      *
-     * @return the list of cards in the front row
+     * @return      the list of cards in the front row
      */
     public ArrayList<Card> getCardsInFrontRow() {
         return cardsInFrontRow;
@@ -179,7 +187,7 @@ public class Player {
 
     /**
      *
-     * @return the list of cards in the back row
+     * @return      the list of cards in the back row
      */
     public ArrayList<Card> getCardsInBackRow() {
         return cardsInBackRow;
@@ -187,7 +195,7 @@ public class Player {
 
     /**
      *
-     * @return the current Hero for the game
+     * @return      the current Hero for the game
      */
     public Card getCurrentHero() {
         return currentHero;
@@ -195,7 +203,7 @@ public class Player {
 
     /**
      *
-     * @param currentHero the current Hero for the game
+     * @param currentHero   the current Hero for the game
      */
     public void setCurrentHero(final Card currentHero) {
         this.currentHero = currentHero;
@@ -214,7 +222,7 @@ public class Player {
 
     /**
      *
-     * @param index of removed card
+     * @param index     of removed card
      */
     public void removeCardFromHand(final int index) {
         cardsInHand.remove(index);
@@ -222,7 +230,7 @@ public class Player {
 
     /**
      *
-     * @param index the card's index
+     * @param index     the card's index
      */
     public void placeCardWithIndex(final int index) {
         if (cardsInHand.isEmpty() || cardsInHand.size() <= index) {
@@ -241,17 +249,14 @@ public class Player {
         }
 
         subtractMana(card.getMana());
-
-        System.out.println("Placed card " + card.getName() + ".");
-
         removeCardFromHand(index);
     }
 
     /**
      *
-     * @param cardName the name of the card
-     * @return true     if the front row has slots open
-     *         false    otherwise
+     * @param cardName      the name of the card
+     * @return              true     if the front row has slots open
+     *                      false    otherwise
      */
     public boolean isCardEligibleForFrontRow(final String cardName) {
         return (cardName.matches(CardNames.THE_RIPPER)
@@ -263,9 +268,9 @@ public class Player {
 
     /**
      *
-     * @param cardName the name of the card
-     * @return true     if the back row has slots open
-     *         false    otherwise
+     * @param cardName      the name of the card
+     * @return              true     if the back row has slots open
+     *                      false    otherwise
      */
     public boolean isCardEligibleForBackRow(final String cardName) {
         return (cardName.matches(CardNames.SENTINEL)
@@ -277,9 +282,9 @@ public class Player {
 
     /**
      *
-     * @param cardName the name of the card
-     * @return true     if the front/back row is indeed full
-     *         false    otherwise
+     * @param cardName      the name of the card
+     * @return              true     if the front/back row is indeed full
+     *                      false    otherwise
      */
     public boolean isTheRowFullForCard(final String cardName) {
         return ((cardName.matches(CardNames.THE_RIPPER)
@@ -296,7 +301,7 @@ public class Player {
 
     /**
      *
-     * @param index the index of the card to be removed
+     * @param index     the index of the card to be removed
      */
     public void removeCardFromDeck(final int index) {
         if (!currentDeck.isEmpty() && currentDeck.size() > index) {
@@ -308,9 +313,9 @@ public class Player {
      *  method to apply the Environment card.
      * Only to be used after checking for exceptions!
      *
-     * @param card the Environment card
-     * @param affectedRow target row to apply the card's effect
-     * @param row the row's index on the table
+     * @param card          the Environment card
+     * @param affectedRow   target row to apply the card's effect
+     * @param row           the row's index on the table
      */
     public void useEnvironmentCard(final Card card,
                                    final ArrayList<Card> affectedRow,
@@ -357,7 +362,7 @@ public class Player {
 
     /**
      *
-     * @param seed given seed for standard shuffle
+     * @param seed      given seed for standard shuffle
      */
     public void shuffleDeck(final String seed) {
         Random random = new Random(Long.parseLong(seed));
@@ -366,11 +371,11 @@ public class Player {
 
     /**
      *
-     * @param name name of the card
-     * @return card's type, as it follows:
-     *          1 for MINION;
-     *          2 for ENVIRONMENT;
-     *          3 for HERO.
+     * @param name      name of the card
+     * @return          card's type, as it follows:
+     *                  1 for MINION;
+     *                  2 for ENVIRONMENT;
+     *                  3 for HERO.
      */
     public int getCardType(final String name) {
         return switch (name) {
@@ -400,8 +405,8 @@ public class Player {
 
     /**
      *
-     * @param card CardInput instance to be converted to Card
-     * @return the parsed card
+     * @param card      CardInput instance to be converted to Card
+     * @return          the parsed card
      */
     public Card getParsedCard(final CardInput card) {
         Card parsedCard;
@@ -449,16 +454,20 @@ public class Player {
 
     /**
      *
-     * @param row string to designate which row to check ("backRow" / "frontRow")
-     * @return true     if the row has reached its maximum capacity
-     *         false    otherwise
+     * @param row       string to designate which row to check ("backRow" / "frontRow")
+     * @return          true     if the row has reached its maximum capacity
+     *                  false    otherwise
      */
     public boolean checkRowStatus(final String row) {
         return (row.matches("backRow") ? cardsInBackRow.size() == Constants.FIVE
                                              : cardsInFrontRow.size() == Constants.FIVE);
     }
 
-    public void replaceDeck(ArrayList<Card> deck) {
+    /**
+     *
+     * @param deck      deck to be clones
+     */
+    public void replaceDeck(final ArrayList<Card> deck) {
         ArrayList<Card> newDeck = new ArrayList<>();
 
         for (Card card : deck) {
