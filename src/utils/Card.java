@@ -17,97 +17,137 @@ public abstract class Card {
 
     private boolean stunned = false;
 
+    private boolean hasAttackedThisTurn = false;
+
     /**
-     *  getting the card's mana
+     *
+     * @return the card's mana
      */
     public int getMana() {
         return mana;
     }
 
     /**
-     *  setting the card's mana
+     *
+     * @param mana the card's mana
      */
     public void setMana(final int mana) {
         this.mana = mana;
     }
 
     /**
-     *  getting a card's description
-     */
-
-
-    /**
-     *  getting the card's health
+     *
+     * @return the card's health
      */
     public int getHealth() {
         return health;
     }
 
     /**
-     *  setting the card's health
+     *
+     * @param health the card's health
      */
     public void setHealth(final int health) {
         this.health = health;
     }
 
     /**
-     *  getting the attack damage
+     *
+     * @return the card's damage
      */
     public int getAttackDamage() {
         return attackDamage;
     }
 
     /**
-     *  setting the attack damage
+     *
+     * @param attackDamage the card's damage
      */
     public void setAttackDamage(final int attackDamage) {
         this.attackDamage = attackDamage;
     }
 
+    /**
+     *
+     * @return the card's description
+     */
     public String getDescription() {
         return description;
     }
 
     /**
-     *  setting a card's description
+     *
+     * @param description the card's description
      */
     public void setDescription(final String description) {
         this.description = description;
     }
 
     /**
-     *  getting a card's color palette
+     *
+     * @return the palette of the card
      */
     public ArrayList<String> getColors() {
         return colors;
     }
 
     /**
-     *  setting a card's color palette
+     *
+     * @param colors the palette of the card
      */
     public void setColors(final ArrayList<String> colors) {
         this.colors = colors;
     }
 
     /**
-     *  getting a card's name
+     *
+     * @return the card's name
      */
     public String getName() {
         return name;
     }
 
     /**
-     *  setting a card's name
+     *
+     * @param name the card's name
      */
     public void setName(final String name) {
         this.name = name;
     }
 
+    /**
+     *
+    * @return true      if card is stunned
+     *        false     otherwise
+     */
     public boolean isStunned() {
         return stunned;
     }
 
-    public void setStunned(boolean stunned) {
+    /**
+     *
+     * @param stunned true      if card is stunned
+     *                false     otherwise
+     */
+    public void setStunned(final boolean stunned) {
         this.stunned = stunned;
+    }
+
+    /**
+     *
+     * @return      true        if the card has attacked once this turn
+     *              false       otherwise
+     */
+    public boolean hasAttackedThisTurn() {
+        return hasAttackedThisTurn;
+    }
+
+    /**
+     *
+     * @param hasAttackedThisTurn       true        if the card has attacked once this turn
+ *                                      false       otherwise
+     */
+    public void setHasAttackedThisTurn(boolean hasAttackedThisTurn) {
+        this.hasAttackedThisTurn = hasAttackedThisTurn;
     }
 }

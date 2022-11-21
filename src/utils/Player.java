@@ -26,23 +26,42 @@ public class Player {
 
     public Player() { }
 
+    /**
+     *
+     * @return player's mana
+     */
     public int getMana() {
         return mana;
     }
 
+    /**
+     *
+     * @param mana player's mana
+     */
     public void setMana(final int mana) {
         this.mana = mana;
     }
 
+    /**
+     * increments the player's mana every turn
+     */
     public void incrementMana() {
-        if (manaIncrement < 10) {
+        if (manaIncrement < Constants.TEN) {
             manaIncrement++;
         }
         mana += manaIncrement;
     }
 
-    public void subtractMana(int mana) {
-        this.mana -= mana;
+    public void setManaIncrement(final int manaIncrement) {
+        this.manaIncrement = manaIncrement;
+    }
+
+    /**
+     *
+     * @param consumedMana mana to be subtracted
+     */
+    public void subtractMana(final int consumedMana) {
+        this.mana -= consumedMana;
     }
 
     /**
@@ -62,155 +81,134 @@ public class Player {
     }
 
     /**
-     *  getting the number of cards in current deck
-     */
-    public int getCardsInDeckCount() {
-        return cardsInDeckCount;
-    }
-
-    /**
-     *  setting the number of cards in current deck
+     *
+     * @param cardsInDeckCounts number of cards per deck
      */
     public void setCardsInDeckCount(final int cardsInDeckCounts) {
         this.cardsInDeckCount = cardsInDeckCounts;
     }
 
     /**
-     *  getting the number of decks
-     */
-    public int getDeckCount() {
-        return deckCount;
-    }
-
-    /**
-     *  setting the number of decks
+     *
+     * @param deckCount number of decks
      */
     public void setDeckCount(final int deckCount) {
         this.deckCount = deckCount;
     }
 
-    public void decrementDeckCount() {
-        this.deckCount--;
-    }
-
     /**
-     *  getting the index for the current deck
+     *
+     * @return the index of the current deck
      */
     public int getCurrentDeckIndex() {
         return currentDeckIndex;
     }
 
     /**
-     *  setting the index for the current deck
+     *
+     * @param currentDeckIndex the index of the current deck
      */
     public void setCurrentDeckIndex(final int currentDeckIndex) {
         this.currentDeckIndex = currentDeckIndex;
     }
 
     /**
-     *  getting the current deck
+     *
+     * @return the current deck
      */
     public ArrayList<Card> getCurrentDeck() {
         return currentDeck;
     }
 
+    /**
+     *
+     * @param currentDeck the current deck in Card format
+     */
     public void setCurrentDeck(final ArrayList<Card> currentDeck) {
         this.currentDeck = currentDeck;
     }
 
     /**
-     *  getting the list of decks
+     *
+     * @return the list of decks in Card format
      */
     public ArrayList<ArrayList<Card>> getDeckList() {
         return deckList;
     }
 
     /**
-     *  setting the list of decks
+     * the method will take the deck list in CardInput format
+     * and convert it to list of lists of Card
+     *
+     * @param deckList the list of decks in CardInput format
      */
     public void setDeckList(final ArrayList<ArrayList<CardInput>> deckList) {
         this.deckList = new ArrayList<>();
         for (ArrayList<CardInput> deck : deckList) {
             ArrayList<Card> parsedDeck = new ArrayList<>();
 
-            for (CardInput card : deck)
+            for (CardInput card : deck) {
                 parsedDeck.add(getParsedCard(card));
+            }
 
             this.deckList.add(parsedDeck);
         }
     }
 
-    public void setDeckList2(final ArrayList<ArrayList<Card>> deckList) {
-        this.deckList = deckList;
+    public void resetCards() {
+        cardsInHand = new ArrayList<>();
+        cardsInFrontRow = new ArrayList<>();
+        cardsInBackRow = new ArrayList<>();
     }
 
     /**
-     *  getting the current hand of cards
+     *
+     * @return the list of cards in the player's hand
      */
     public ArrayList<Card> getCardsInHand() {
         return cardsInHand;
     }
 
     /**
-     *  setting the current hand of cards
-     */
-    public void setCardsInHand(final ArrayList<CardInput> cardsInHand) {
-        this.cardsInHand = new ArrayList<>();
-        for (CardInput card : cardsInHand) {
-            this.cardsInHand.add(getParsedCard(card));
-        }
-    }
-
-    public void setCardsInHand2(final ArrayList<Card> cardsInHand) {
-        this.cardsInHand = cardsInHand;
-    }
-
-    /**
-     *  getting the front row cards
+     *
+     * @return the list of cards in the front row
      */
     public ArrayList<Card> getCardsInFrontRow() {
         return cardsInFrontRow;
     }
 
     /**
-     *  setting the front row cards
-     */
-    public void setCardsInFrontRow(final ArrayList<CardInput> cardsInFrontRow) {
-        this.cardsInFrontRow = new ArrayList<>();
-        for (CardInput card : cardsInFrontRow) {
-            this.cardsInFrontRow.add(getParsedCard(card));
-        }
-    }
-
-    public void setCardsInFrontRow2(final ArrayList<Card> cardsInFrontRow) {
-        this.cardsInFrontRow = cardsInFrontRow;
-    }
-
-    /**
-     *  getting the back row cards
+     *
+     * @return the list of cards in the back row
      */
     public ArrayList<Card> getCardsInBackRow() {
         return cardsInBackRow;
     }
 
     /**
-     *  getting current hero
+     *
+     * @return the current Hero for the game
      */
     public Card getCurrentHero() {
         return currentHero;
     }
 
     /**
-     *  setting current hero
+     *
+     * @param currentHero the current Hero for the game
      */
     public void setCurrentHero(final Card currentHero) {
         this.currentHero = currentHero;
     }
 
+    /**
+     * method to complete the procedure of adding a card to the
+     * player's hand
+     */
     public void addCardInHand() {
         if (!currentDeck.isEmpty()) {
-            cardsInHand.add(currentDeck.get(0));
-            currentDeck.remove(0);
+            cardsInHand.add(currentDeck.get(Constants.ZERO));
+            removeCardFromDeck(Constants.ZERO);
         }
     }
 
@@ -222,18 +220,25 @@ public class Player {
         cardsInHand.remove(index);
     }
 
+    /**
+     *
+     * @param index the card's index
+     */
     public void placeCardWithIndex(final int index) {
-        if (cardsInHand.isEmpty() || cardsInHand.size() <= index)
+        if (cardsInHand.isEmpty() || cardsInHand.size() <= index) {
             return;
+        }
 
         Card card = cardsInHand.get(index);
 
         String cardName = card.getName();
-        if (isCardEligibleForFrontRow(cardName))
+        if (isCardEligibleForFrontRow(cardName)) {
             cardsInFrontRow.add(card);
+        }
 
-        if (isCardEligibleForBackRow(cardName))
+        if (isCardEligibleForBackRow(cardName)) {
             cardsInBackRow.add(card);
+        }
 
         subtractMana(card.getMana());
 
@@ -242,45 +247,85 @@ public class Player {
         removeCardFromHand(index);
     }
 
-    public boolean isCardEligibleForFrontRow(String cardName) {
-        return (cardName.matches(CardNames.THE_RIPPER) || cardName.matches(CardNames.MIRAJ) ||
-                cardName.matches(CardNames.GOLIATH) || cardName.matches(CardNames.WARDEN)) &&
-                cardsInFrontRow.size() < Constants.FIVE;
-    }
-
-    public boolean isCardEligibleForBackRow(String cardName) {
-        return (cardName.matches(CardNames.SENTINEL) || cardName.matches(CardNames.BERSERKER) ||
-                cardName.matches(CardNames.THE_CURSED_ONE) || cardName.matches(CardNames.DISCIPLE)) &&
-                cardsInBackRow.size() < Constants.FIVE;
-    }
-
-    public boolean isTheRowFullForCard(String cardName) {
-        return ((cardName.matches(CardNames.THE_RIPPER) || cardName.matches(CardNames.MIRAJ) ||
-                cardName.matches(CardNames.GOLIATH) || cardName.matches(CardNames.WARDEN)) &&
-                cardsInFrontRow.size() >= Constants.FIVE) ||
-                ((cardName.matches(CardNames.SENTINEL) || cardName.matches(CardNames.BERSERKER) ||
-                cardName.matches(CardNames.THE_CURSED_ONE) || cardName.matches(CardNames.DISCIPLE)) &&
-                cardsInBackRow.size() >= Constants.FIVE);
+    /**
+     *
+     * @param cardName the name of the card
+     * @return true     if the front row has slots open
+     *         false    otherwise
+     */
+    public boolean isCardEligibleForFrontRow(final String cardName) {
+        return (cardName.matches(CardNames.THE_RIPPER)
+                || cardName.matches(CardNames.MIRAJ)
+                || cardName.matches(CardNames.GOLIATH)
+                || cardName.matches(CardNames.WARDEN))
+                && cardsInFrontRow.size() < Constants.FIVE;
     }
 
     /**
-     *  removing a card from the current deck
+     *
+     * @param cardName the name of the card
+     * @return true     if the back row has slots open
+     *         false    otherwise
      */
-    public void removeCardFromDeck(final int index) {
-        if (!currentDeck.isEmpty() && currentDeck.size() > index)
-            currentDeck.remove(index);
+    public boolean isCardEligibleForBackRow(final String cardName) {
+        return (cardName.matches(CardNames.SENTINEL)
+                || cardName.matches(CardNames.BERSERKER)
+                || cardName.matches(CardNames.THE_CURSED_ONE)
+                || cardName.matches(CardNames.DISCIPLE))
+                && cardsInBackRow.size() < Constants.FIVE;
     }
 
-    public void useEnvironmentCard(Card card, ArrayList<Card> affectedRow, int row) {
+    /**
+     *
+     * @param cardName the name of the card
+     * @return true     if the front/back row is indeed full
+     *         false    otherwise
+     */
+    public boolean isTheRowFullForCard(final String cardName) {
+        return ((cardName.matches(CardNames.THE_RIPPER)
+                || cardName.matches(CardNames.MIRAJ)
+                || cardName.matches(CardNames.GOLIATH)
+                || cardName.matches(CardNames.WARDEN))
+                    && cardsInFrontRow.size() >= Constants.FIVE)
+                || ((cardName.matches(CardNames.SENTINEL)
+                || cardName.matches(CardNames.BERSERKER)
+                || cardName.matches(CardNames.THE_CURSED_ONE)
+                || cardName.matches(CardNames.DISCIPLE))
+                    && cardsInBackRow.size() >= Constants.FIVE);
+    }
+
+    /**
+     *
+     * @param index the index of the card to be removed
+     */
+    public void removeCardFromDeck(final int index) {
+        if (!currentDeck.isEmpty() && currentDeck.size() > index) {
+            currentDeck.remove(index);
+        }
+    }
+
+    /**
+     *  method to apply the Environment card.
+     * Only to be used after checking for exceptions!
+     *
+     * @param card the Environment card
+     * @param affectedRow target row to apply the card's effect
+     * @param row the row's index on the table
+     */
+    public void useEnvironmentCard(final Card card,
+                                   final ArrayList<Card> affectedRow,
+                                   final int row) {
 
         switch (card.getName()) {
             case CardNames.WINTERFELL -> {
-                for (Card affectedCard : affectedRow)
+                for (Card affectedCard : affectedRow) {
                     affectedCard.setStunned(true);
+                }
             }
             case CardNames.FIRESTORM -> {
-                for (Card affectedCard : affectedRow)
+                for (Card affectedCard : affectedRow) {
                     affectedCard.setHealth(affectedCard.getHealth() - 1);
+                }
 
                 affectedRow.removeIf(affectedCard -> affectedCard.getHealth() <= 0);
             }
@@ -297,11 +342,13 @@ public class Player {
                     }
                 }
 
-                ArrayList<Card> newRowForMinion = (row == 0) ? this.cardsInBackRow : this.cardsInFrontRow;
+                ArrayList<Card> newRowForMinion = (row == 0) ? this.cardsInBackRow
+                                                             : this.cardsInFrontRow;
                 newRowForMinion.add(bestMinionOutThere);
                 affectedRow.remove(bestMinionOutThere);
 
             }
+            default -> { }
         }
 
         subtractMana(card.getMana());
@@ -309,7 +356,8 @@ public class Player {
     }
 
     /**
-     *  randomising the deck cards order
+     *
+     * @param seed given seed for standard shuffle
      */
     public void shuffleDeck(final String seed) {
         Random random = new Random(Long.parseLong(seed));
@@ -317,10 +365,12 @@ public class Player {
     }
 
     /**
-     *  getting the card's type
-     *  1 = MINION
-     *  2 = ENVIRONMENT
-     *  3 = HERO
+     *
+     * @param name name of the card
+     * @return card's type, as it follows:
+     *          1 for MINION;
+     *          2 for ENVIRONMENT;
+     *          3 for HERO.
      */
     public int getCardType(final String name) {
         return switch (name) {
@@ -349,17 +399,19 @@ public class Player {
     }
 
     /**
-     *  parsing a card from CardInput to Card
+     *
+     * @param card CardInput instance to be converted to Card
+     * @return the parsed card
      */
     public Card getParsedCard(final CardInput card) {
         Card parsedCard;
 
         int cardType = getCardType(card.getName());
-        parsedCard = (cardType == 1) ? new Minion()
-                   : (cardType == 2) ? new Environment() : new Hero();
+        parsedCard = (cardType == Constants.ONE) ? new Minion()
+                   : (cardType == Constants.TWO) ? new Environment() : new Hero();
 
         parsedCard.setName(card.getName());
-        parsedCard.setHealth((cardType == 3) ? Constants.THIRTY : card.getHealth());
+        parsedCard.setHealth((cardType == Constants.THREE) ? Constants.THIRTY : card.getHealth());
         parsedCard.setMana(card.getMana());
         parsedCard.setAttackDamage(card.getAttackDamage());
         parsedCard.setDescription(card.getDescription());
@@ -368,15 +420,59 @@ public class Player {
         return parsedCard;
     }
 
+    /**
+     *  remove the stunned label from all cards
+     */
     public void removeStunFromCards() {
-        for (Card card : cardsInBackRow)
+
+        for (Card card : cardsInBackRow) {
             card.setStunned(false);
-        for (Card card : cardsInFrontRow)
+        }
+
+        for (Card card : cardsInFrontRow) {
             card.setStunned(false);
+        }
     }
 
-    public boolean checkRowStatus(String row) {
-        return (row.matches("backRow") ? cardsInBackRow.size() == Constants.FIVE :
-                                                cardsInFrontRow.size() == Constants.FIVE);
+    /**
+     *  resets the attack cool down on all cards
+     */
+    public void resetCardAttacks() {
+        for (Card card : cardsInBackRow) {
+            card.setHasAttackedThisTurn(false);
+        }
+
+        for (Card card : cardsInFrontRow) {
+            card.setHasAttackedThisTurn(false);
+        }
+    }
+
+    /**
+     *
+     * @param row string to designate which row to check ("backRow" / "frontRow")
+     * @return true     if the row has reached its maximum capacity
+     *         false    otherwise
+     */
+    public boolean checkRowStatus(final String row) {
+        return (row.matches("backRow") ? cardsInBackRow.size() == Constants.FIVE
+                                             : cardsInFrontRow.size() == Constants.FIVE);
+    }
+
+    public void replaceDeck(ArrayList<Card> deck) {
+        ArrayList<Card> newDeck = new ArrayList<>();
+
+        for (Card card : deck) {
+            Card newCard = (getCardType(card.getName()) == 1 ? new Minion() : new Environment());
+            newCard.setName(card.getName());
+            newCard.setMana(card.getMana());
+            newCard.setHealth(card.getHealth());
+            newCard.setDescription(card.getDescription());
+            newCard.setColors(card.getColors());
+            newCard.setAttackDamage(card.getAttackDamage());
+
+            newDeck.add(newCard);
+        }
+
+        this.currentDeck = newDeck;
     }
 }

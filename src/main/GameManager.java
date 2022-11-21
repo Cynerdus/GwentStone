@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import fileio.*;
+import fileio.ActionsInput;
+import fileio.CardInput;
+import fileio.GameInput;
+import fileio.Input;
 import utils.*;
 
 import java.util.ArrayList;
@@ -17,7 +20,12 @@ public final class GameManager {
     private final Player player1;
     private final Player player2;
 
+    private int playerOneWins = Constants.ZERO;
+    private int playerTwoWins = Constants.ZERO;
+
     private GameInput currentSession;
+
+    private final AbilityManager abilityManager = new AbilityManager();
 
     public GameManager(final Input inputData, final ArrayNode outputData) {
         this.inputData = inputData;
@@ -30,16 +38,23 @@ public final class GameManager {
     }
 
     /**
-     *  retrieving the output in json
+     *
+     * @return      the output in .json
      */
     public ArrayNode generateOutput() {
         return outputData;
     }
 
-    /*      pre-games setup     */
-    private Player playerSetup(int playerIndex) {
+    /**
+     *
+     * @param playerIndex       index of player to be set up
+     * @return                  the new player
+     */
+    private Player playerSetup(final int playerIndex) {
         Player player = new Player();
-        ArrayList<ArrayList<CardInput>> playerDecks = (playerIndex == 1 ) ? inputData.getPlayerOneDecks().getDecks() : inputData.getPlayerTwoDecks().getDecks();
+        ArrayList<ArrayList<CardInput>> playerDecks = (playerIndex == 1)
+                                        ? inputData.getPlayerOneDecks().getDecks()
+                                        : inputData.getPlayerTwoDecks().getDecks();
 
         player.setDeckList(playerDecks);
         player.setDeckCount(playerDecks.size());
@@ -48,7 +63,9 @@ public final class GameManager {
         return player;
     }
 
-    /*      simulate the games      */
+    /**
+     * method to manage game sessions
+     */
     private void generateGameSessions() {
         for (GameInput session : inputData.getGames()) {
             currentSession = session;
@@ -56,8 +73,12 @@ public final class GameManager {
             sessionSetup(player1);
             sessionSetup(player2);
             System.out.println("Players have been set up!");
-            System.out.println("Player1 | mana: " + player1.getMana() + " | hero name: " + player1.getCurrentHero().getName() + " | deck index: " + player1.getCurrentDeckIndex());
-            System.out.println("Player2 | mana: " + player2.getMana() + " | hero name: " + player2.getCurrentHero().getName() + " | deck index: " + player2.getCurrentDeckIndex());
+            System.out.println("Player1 | mana: " + player1.getMana() + " | hero name: "
+                            + player1.getCurrentHero().getName() + " | deck index: "
+                            + player1.getCurrentDeckIndex());
+            System.out.println("Player2 | mana: " + player2.getMana() + " | hero name: "
+                            + player2.getCurrentHero().getName() + " | deck index: "
+                            + player2.getCurrentDeckIndex());
 
             currentPlayer = (session.getStartGame().getStartingPlayer() == 1) ? player1 : player2;
 
@@ -74,50 +95,75 @@ public final class GameManager {
 
                 System.out.print("Hand: ");
                 for (Card card : currentPlayer.getCardsInHand()) {
-                    System.out.print(card.getName() + ", ");
+                    if (currentPlayer.getCardType(card.getName()) == 1) {
+                        System.out.print(card.getName() + "("
+                                + card.getHealth() + ", " + card.getAttackDamage()
+                                + ", " + card.getMana() + ") | ");
+                    } else {
+                        System.out.println(card.getName() + ", ");
+                    }
                 }
                 System.out.print("\n");
 
                 System.out.print("Front row: ");
                 for (Card card : currentPlayer.getCardsInFrontRow()) {
-                    System.out.print(card.getName() + ", ");
+                    System.out.print(card.getName() + "("
+                            + card.getHealth() + ", " + card.getAttackDamage()
+                            + ", " + card.getMana() + ") | ");
                 }
                 System.out.print("\n");
 
                 System.out.print("Back row: ");
                 for (Card card : currentPlayer.getCardsInBackRow()) {
-                    System.out.print(card.getName() + ", ");
+                    System.out.print(card.getName() + "("
+                            + card.getHealth() + ", " + card.getAttackDamage()
+                            + ", " + card.getMana() + ") | ");
                 }
                 System.out.print("\n");
 
                 int commandIndex = getCommandIndex(action.getCommand());
-                if (commandIndex < Constants.THIRTEEN)
+                if (commandIndex < Constants.THIRTEEN) {
                     debugCommand(commandIndex, action);
-                else
+                } else {
                     actionCommand(commandIndex, action);
+                }
 
             }
         }
     }
 
-    private void sessionSetup(Player player) {
+    /**
+     *
+     * @param player        player to apply the changes to
+     */
+    private void sessionSetup(final Player player) {
         System.out.println("Setting up player " + (player.equals(player1) ? 1 : 2) + " ...");
 
         int playerOneIndex = currentSession.getStartGame().getPlayerOneDeckIdx();
         int playerTwoIndex = currentSession.getStartGame().getPlayerTwoDeckIdx();
 
-        Hero playerOneHero = (Hero) player.getParsedCard(currentSession.getStartGame().getPlayerOneHero());
-        Hero playerTwoHero = (Hero) player.getParsedCard(currentSession.getStartGame().getPlayerTwoHero());
+        Hero playerOneHero = (Hero) player.getParsedCard(currentSession.getStartGame()
+                                                                       .getPlayerOneHero());
+        Hero playerTwoHero = (Hero) player.getParsedCard(currentSession.getStartGame()
+                                                                       .getPlayerTwoHero());
 
         player.setCurrentDeckIndex((player.equals(player1)) ? playerOneIndex : playerTwoIndex);
-        player.setCurrentDeck(player.getDeckList().get(player.getCurrentDeckIndex()));
+
+        player.replaceDeck(player.getDeckList().get(player.getCurrentDeckIndex()));
         player.shuffleDeck(currentSession.getStartGame().getShuffleSeed() + "");
 
+        player.resetCards();
         player.addCardInHand();
         player.setCurrentHero((player.equals(player1)) ? playerOneHero : playerTwoHero);
         player.setMana(Constants.ONE);
+        player.setManaIncrement(1);
     }
 
+    /**
+     *
+     * @param       command name of the command
+     * @return      index of the command
+     */
     private int getCommandIndex(final String command) {
         return switch (command) {
             case Commands.GET_PLAYER_DECK -> Constants.ONE;
@@ -135,10 +181,19 @@ public final class GameManager {
             case Commands.END_PLAYER_TURN -> Constants.THIRTEEN;
             case Commands.PLACE_CARD -> Constants.FOURTEEN;
             case Commands.USE_ENVIRONMENT_CARD -> Constants.FIFTEEN;
+            case Commands.CARD_USES_ATTACK -> Constants.SIXTEEN;
+            case Commands.CARD_USES_ABILITY -> Constants.SEVENTEEN;
+            case Commands.USE_ATTACK_HERO -> Constants.EIGHTEEN;
+            case Commands.USE_HERO_ABILITY -> Constants.NINETEEN;
             default -> Constants.ZERO;
         };
     }
 
+    /**
+     *
+     * @param index     index for command
+     * @param action    current action
+     */
     private void debugCommand(final int index, final ActionsInput action) {
         ObjectNode actionOutput = JsonNodeFactory.instance.objectNode();
 
@@ -157,20 +212,37 @@ public final class GameManager {
             case Constants.SEVEN -> getCardAtPosition(actionOutput, action);
             case Constants.EIGHT -> getEnvironmentCardsInHand(actionOutput, action, refPlayer);
             case Constants.NINE -> getFrozenCardsOnTable(actionOutput);
+            case Constants.TEN -> getTotalGamesPlayed(actionOutput);
+            case Constants.ELEVEN -> getPlayerOneWins(actionOutput);
+            case Constants.TWELVE -> getPlayerTwoWins(actionOutput);
             default -> { }
         }
     }
 
-    public void actionCommand(int index, ActionsInput action) {
+    /**
+     *
+     * @param index     index for command
+     * @param action    current action
+     */
+    public void actionCommand(final int index, final ActionsInput action) {
         switch (index) {
             case Constants.THIRTEEN -> changePlayerTurn();
             case Constants.FOURTEEN -> placeCard(action, action.getHandIdx());
             case Constants.FIFTEEN -> useEnvironmentCard(action);
+            case Constants.SIXTEEN -> cardUsesAttack(action);
+            case Constants.SEVENTEEN -> cardUsesAbility(action);
+            case Constants.EIGHTEEN -> useAttackHero(action);
+            case Constants.NINETEEN -> useHeroAbility(action);
             default -> { }
         }
     }
 
-    public void throwException(String exceptionName, ActionsInput action) {
+    /**
+     *
+     * @param exceptionName     name of the exception
+     * @param action            current action
+     */
+    public void throwException(final String exceptionName, final ActionsInput action) {
         ObjectNode actionOutput = JsonNodeFactory.instance.objectNode();
 
         outputData.add(actionOutput);
@@ -191,19 +263,41 @@ public final class GameManager {
                             rowNotFromEnemy(actionOutput, action);
             case Exceptions.NO_STEAL_ROW_FULL ->
                             noStealRowFull(actionOutput, action);
-            case Exceptions.NO_CARD_AT_POSITION ->
-                            noCardAtPosition(actionOutput, action);
+            case Exceptions.ATTACK_OWN_CARD ->
+                            attackOwnCard(actionOutput, action);
+            case Exceptions.CARD_ALREADY_ATTACKED ->
+                            cardAlreadyAttacked(actionOutput, action);
+            case Exceptions.FROZEN_ATTACKER ->
+                            frozenAttacker(actionOutput, action);
+            case Exceptions.TANK_CARD_NOT_ATTACKED ->
+                            tankCardNotAttacked(actionOutput, action);
+            case Exceptions.CARD_NOT_OWN ->
+                            cardNotOwn(actionOutput, action);
+            case Exceptions.NOT_ENOUGH_MANA_FOR_HERO ->
+                            notEnoughManaForHero(actionOutput, action);
+            case Exceptions.HERO_ALREADY_ATTACKED ->
+                            heroAlreadyAttacked(actionOutput, action);
+            case Exceptions.ROW_DOES_NOT_BELONG_TO_ENEMY ->
+                            rowDoesNotBelongToEnemy(actionOutput, action);
+            case Exceptions.ROW_IS_NOT_OWN ->
+                            rowIsNotOwn(actionOutput, action);
             default -> { }
         }
     }
 
+    /**
+     * method to apply overall turn/round changes
+     */
     public void changePlayerTurn() {
         currentPlayer.removeStunFromCards();
+        currentPlayer.resetCardAttacks();
+        currentPlayer.getCurrentHero().setHasAttackedThisTurn(false);
+
         currentPlayer = (currentPlayer.equals(player1)) ? player2 : player1;
 
         int startingPlayer = currentSession.getStartGame().getStartingPlayer();
-        boolean endRound = (currentPlayer.equals(player1) &&  startingPlayer == 1) ||
-                            (currentPlayer.equals(player2) && startingPlayer == 2);
+        boolean endRound = (currentPlayer.equals(player1) &&  startingPlayer == 1)
+                         || (currentPlayer.equals(player2) && startingPlayer == 2);
 
         if (endRound) {
             applyNewRoundChanges(player1);
@@ -212,92 +306,373 @@ public final class GameManager {
         }
     }
 
-    public void applyNewRoundChanges(Player player) {
+    /**
+     *
+     * @param player        player to apply the changes to
+     */
+    public void applyNewRoundChanges(final Player player) {
         player.incrementMana();
         player.addCardInHand();
     }
 
-    public void placeCard(ActionsInput action, int handIndex) {
-        if (!currentPlayer.getCardsInHand().isEmpty() && currentPlayer.getCardsInHand().size() > handIndex) {
-            Card card = currentPlayer.getCardsInHand().get(handIndex);
+    /**
+     *
+     * @param action        current action
+     * @param handIndex     index to retrieve the card from the player's hand
+     */
+    public void placeCard(final ActionsInput action, final int handIndex) {
+        Card card = currentPlayer.getCardsInHand().get(handIndex);
 
-            if (currentPlayer.getCardType(card.getName()) == Constants.TWO) {
-                throwException(Exceptions.ENVIRONMENT_CARD_ON_TABLE, action);
-                return;
-            }
-
-            if (card.getMana() > currentPlayer.getMana()) {
-                throwException(Exceptions.NOT_ENOUGH_MANA_TO_PLACE_CARD, action);
-                return;
-            }
-
-            if (currentPlayer.isTheRowFullForCard(card.getName())) {
-                throwException(Exceptions.ROW_IS_FULL, action);
-                return;
-            }
-
-            currentPlayer.placeCardWithIndex(handIndex);
+        if (currentPlayer.getCardType(card.getName()) == Constants.TWO) {
+            throwException(Exceptions.ENVIRONMENT_CARD_ON_TABLE, action);
+            return;
         }
+
+        if (card.getMana() > currentPlayer.getMana()) {
+            throwException(Exceptions.NOT_ENOUGH_MANA_TO_PLACE_CARD, action);
+            return;
+        }
+
+        if (currentPlayer.isTheRowFullForCard(card.getName())) {
+            throwException(Exceptions.ROW_IS_FULL, action);
+            return;
+        }
+
+        currentPlayer.placeCardWithIndex(handIndex);
     }
 
-    public void useEnvironmentCard(ActionsInput action) {
+    /**
+     *
+     * @param action        current action
+     */
+    public void useEnvironmentCard(final ActionsInput action) {
         ArrayList<Card> affectedRow;
 
-        switch (action.getAffectedRow()) {
-            case Constants.ZERO -> affectedRow = player2.getCardsInBackRow();
-            case Constants.ONE -> affectedRow = player2.getCardsInFrontRow();
-            case Constants.TWO -> affectedRow = player1.getCardsInFrontRow();
-            case Constants.THREE -> affectedRow = player1.getCardsInBackRow();
-            default -> affectedRow = new ArrayList<>();
-        }
+        affectedRow = switch (action.getAffectedRow()) {
+            case Constants.ZERO ->  player2.getCardsInBackRow();
+            case Constants.ONE -> player2.getCardsInFrontRow();
+            case Constants.TWO -> player1.getCardsInFrontRow();
+            case Constants.THREE -> player1.getCardsInBackRow();
+            default -> new ArrayList<>();
+        };
 
-        boolean rowFromEnemy = (action.getAffectedRow() == 0 || action.getAffectedRow() == 1
-                                && currentPlayer.equals(player1)) ||
-                                (action.getAffectedRow() == 2 || action.getAffectedRow() == 3
+        boolean rowFromEnemy = (action.getAffectedRow() == Constants.ZERO
+                                || action.getAffectedRow() == Constants.ONE
+                                && currentPlayer.equals(player1))
+                                || (action.getAffectedRow() == Constants.TWO
+                                || action.getAffectedRow() == Constants.THREE
                                 && currentPlayer.equals(player2));
 
-        if (!currentPlayer.getCardsInHand().isEmpty() && currentPlayer.getCardsInHand().size() > action.getHandIdx()) {
-            Card card = currentPlayer.getCardsInHand().get(action.getHandIdx());
-            String cardName = card.getName();
+        Card card = currentPlayer.getCardsInHand().get(action.getHandIdx());
+        String cardName = card.getName();
 
-            System.out.println("CARD NAME: " + card.getName() + " | type: " + currentPlayer.getCardType(card.getName()));
+        System.out.println("CARD NAME: " + card.getName() + " | type: "
+                            + currentPlayer.getCardType(card.getName()));
 
-            if (currentPlayer.getCardType(card.getName()) != 2) {
-                throwException(Exceptions.CARD_NOT_TYPE_ENVIRONMENT, action);
-                return;
-            }
-
-            if (card.getMana() > currentPlayer.getMana()) {
-                throwException(Exceptions.NOT_ENOUGH_MANA_ENVIRONMENT, action);
-                return;
-            }
-
-            if (!cardName.matches(CardNames.HEART_HOUND) && !rowFromEnemy) {
-                throwException(Exceptions.ROW_NOT_FROM_ENEMY, action);
-                return;
-            }
-
-            if (cardName.matches(CardNames.HEART_HOUND) &&
-                isRowFull(action.getAffectedRow())) {
-
-                throwException(Exceptions.NO_STEAL_ROW_FULL, action);
-                return;
-            }
-
-            currentPlayer.useEnvironmentCard(card, affectedRow, action.getAffectedRow());
+        if (currentPlayer.getCardType(card.getName()) != 2) {
+            throwException(Exceptions.CARD_NOT_TYPE_ENVIRONMENT, action);
+            return;
         }
+
+        if (card.getMana() > currentPlayer.getMana()) {
+            throwException(Exceptions.NOT_ENOUGH_MANA_ENVIRONMENT, action);
+            return;
+        }
+
+        if (!cardName.matches(CardNames.HEART_HOUND) && !rowFromEnemy) {
+            throwException(Exceptions.ROW_NOT_FROM_ENEMY, action);
+            return;
+        }
+
+        if (cardName.matches(CardNames.HEART_HOUND)
+            && isRowFull(action.getAffectedRow())) {
+
+            throwException(Exceptions.NO_STEAL_ROW_FULL, action);
+            return;
+        }
+
+        currentPlayer.useEnvironmentCard(card, affectedRow, action.getAffectedRow());
     }
 
-    public boolean isRowFull(int affectedRow) {
-        return switch(affectedRow) {
-            case Constants.ZERO -> (player1.checkRowStatus("backRow"));
-            case Constants.ONE -> (player1.checkRowStatus("frontRow"));
-            case Constants.TWO -> (player2.checkRowStatus("frontRow"));
-            case Constants.THREE -> (player2.checkRowStatus("backRow"));
+    /**
+     *
+     * @param affectedRow       index for the affected row
+     * @return                  true if row is full
+     *                          false otherwise
+     */
+    public boolean isRowFull(final int affectedRow) {
+        return switch (affectedRow) {
+            case Constants.ZERO -> player1.checkRowStatus("backRow");
+            case Constants.ONE -> player1.checkRowStatus("frontRow");
+            case Constants.TWO -> player2.checkRowStatus("frontRow");
+            case Constants.THREE -> player2.checkRowStatus("backRow");
             default -> false;
         };
     }
 
+    public void cardUsesAttack(ActionsInput action) {
+        int attackX = action.getCardAttacker().getX(),
+            attackY = action.getCardAttacker().getY(),
+            defendX = action.getCardAttacked().getX(),
+            defendY = action.getCardAttacked().getY();
+
+        Player attacker = (attackX <= Constants.ONE) ? player2 : player1;
+        Player defender = (defendX >= Constants.TWO) ? player1 : player2;
+
+        ArrayList<Card> attackRow = (attackX == Constants.ZERO || attackX == Constants.THREE)
+                                    ? attacker.getCardsInBackRow()
+                                    : attacker.getCardsInFrontRow();
+
+        ArrayList<Card> defendRow = (defendX == Constants.ZERO || defendX == Constants.THREE)
+                                    ? defender.getCardsInBackRow()
+                                    : defender.getCardsInFrontRow();
+
+        Card attackingCard = attackRow.get(attackY);
+        Card defendingCard = defendRow.get(defendY);
+
+        System.out.println("Attacking card is: " + attackingCard.getName());
+        System.out.println("Defending card is: " + defendingCard.getName());
+
+        if (attacker.equals(defender)) {
+            throwException(Exceptions.ATTACK_OWN_CARD, action);
+            return;
+        }
+
+        if (attackingCard.hasAttackedThisTurn()) {
+            throwException(Exceptions.CARD_ALREADY_ATTACKED, action);
+            return;
+        }
+
+        if (attackingCard.isStunned()) {
+            throwException(Exceptions.FROZEN_ATTACKER, action);
+            return;
+        }
+
+        if (areThereTanks(defender) && !isTank(defendingCard)) {
+            throwException(Exceptions.TANK_CARD_NOT_ATTACKED, action);
+            return;
+        }
+
+        attackCard(attackingCard, defendingCard, defendRow);
+    }
+
+    public void attackCard(Card attackingCard, Card defendingCard, ArrayList<Card> affectedRow) {
+        defendingCard.setHealth(defendingCard.getHealth() - attackingCard.getAttackDamage());
+        attackingCard.setHasAttackedThisTurn(true);
+
+        if (defendingCard.getHealth() <= 0) {
+            affectedRow.remove(defendingCard);
+        }
+    }
+
+    /**
+     *
+     * @param player        defending player
+     * @return              true    if yes there are tanks
+     *                      false   otherwise
+     */
+    public boolean areThereTanks(Player player) {
+        for (Card card : player.getCardsInFrontRow()) {
+            if (card.getName().matches(CardNames.GOLIATH)
+            || card.getName().matches(CardNames.WARDEN)) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTank(Card card) {
+        return (card.getName().matches(CardNames.GOLIATH)
+             || card.getName().matches(CardNames.WARDEN));
+    }
+
+    public void cardUsesAbility(ActionsInput action) {
+        int attackX = action.getCardAttacker().getX(),
+            attackY = action.getCardAttacker().getY(),
+            defendX = action.getCardAttacked().getX(),
+            defendY = action.getCardAttacked().getY();
+
+        Player attacker = (attackX <= Constants.ONE) ? player2 : player1;
+        Player defender = (defendX >= Constants.TWO) ? player1 : player2;
+
+        ArrayList<Card> attackRow = (attackX == Constants.ZERO || attackX == Constants.THREE)
+                ? attacker.getCardsInBackRow()
+                : attacker.getCardsInFrontRow();
+
+        ArrayList<Card> defendRow = (defendX == Constants.ZERO || defendX == Constants.THREE)
+                ? defender.getCardsInBackRow()
+                : defender.getCardsInFrontRow();
+
+
+        Card attackingCard = attackRow.get(attackY);
+        Card defendingCard = defendRow.get(defendY);
+
+        System.out.println("Attacking card is: " + attackingCard.getName());
+        System.out.println("Defending card is: " + defendingCard.getName());
+
+        if (attackingCard.isStunned()) {
+            throwException(Exceptions.FROZEN_ATTACKER, action);
+            return;
+        }
+
+        if (attackingCard.hasAttackedThisTurn()) {
+            throwException(Exceptions.CARD_ALREADY_ATTACKED, action);
+            return;
+        }
+
+        if (attackingCard.getName().matches(CardNames.DISCIPLE)
+            && !defender.equals(attacker)) {
+
+            throwException(Exceptions.CARD_NOT_OWN, action);
+            return;
+        }
+
+        if ((attackingCard.getName().matches(CardNames.THE_RIPPER)
+            || attackingCard.getName().matches(CardNames.MIRAJ)
+            || attackingCard.getName().matches(CardNames.THE_CURSED_ONE))) {
+
+            if (defender.equals(attacker)) {
+                throwException(Exceptions.ATTACK_OWN_CARD, action);
+                return;
+            }
+
+            if (areThereTanks(defender) && !isTank(defendingCard)) {
+                throwException(Exceptions.TANK_CARD_NOT_ATTACKED, action);
+                return;
+            }
+        }
+
+        useAbility(attackingCard, defendingCard, defendRow);
+    }
+
+    public void useAbility(Card attackingCard, Card defendingCard, ArrayList<Card> affectedRow) {
+        switch (attackingCard.getName()) {
+            case CardNames.THE_RIPPER -> abilityManager.weakKnees(attackingCard, defendingCard);
+            case CardNames.MIRAJ -> abilityManager.skyjack(attackingCard, defendingCard);
+            case CardNames.THE_CURSED_ONE -> abilityManager.shapeshift(attackingCard, defendingCard, affectedRow);
+            case CardNames.DISCIPLE -> abilityManager.godsPlan(attackingCard, defendingCard);
+            default -> { }
+        }
+    }
+
+    public void useAttackHero(ActionsInput action) {
+        int attackX = action.getCardAttacker().getX(),
+            attackY = action.getCardAttacker().getY();
+
+        Player attacker = (attackX <= Constants.ONE) ? player2 : player1;
+        Player defender = (attacker.equals(player1)) ? player2 : player1;
+
+        ArrayList<Card> attackRow = (attackX == Constants.ZERO || attackX == Constants.THREE)
+                ? attacker.getCardsInBackRow()
+                : attacker.getCardsInFrontRow();
+
+        Card attackingCard = attackRow.get(attackY);
+        Card attackedHero = defender.getCurrentHero();
+
+        System.out.println("Attacking card is: " + attackingCard.getName());
+        System.out.println("Defending hero is: " + attackedHero.getName());
+
+        if (attackingCard.isStunned()) {
+            throwException(Exceptions.FROZEN_ATTACKER, action);
+            return;
+        }
+
+        if (attackingCard.hasAttackedThisTurn()) {
+            throwException(Exceptions.CARD_ALREADY_ATTACKED, action);
+            return;
+        }
+
+        if (areThereTanks(defender)) {
+            throwException(Exceptions.TANK_CARD_NOT_ATTACKED, action);
+            return;
+        }
+
+        attackHero(attackingCard, attackedHero, attacker);
+    }
+
+    public void attackHero(Card attackingCard, Card hero, Player attacker) {
+        hero.setHealth(hero.getHealth() - attackingCard.getAttackDamage());
+        attackingCard.setHasAttackedThisTurn(true);
+
+        if (hero.getHealth() <= 0) {
+            ObjectNode node = new ObjectMapper().createObjectNode();
+
+            if (attacker.equals(player1))
+                playerOneWins++;
+            else
+                playerTwoWins++;
+
+            node.put("gameEnded", "Player "
+                    + ((attacker.equals(player1)) ? "one" : "two")
+                    + " killed the enemy hero.");
+            outputData.add(node);
+        }
+    }
+
+    public void useHeroAbility(ActionsInput action) {
+        Player target = switch (action.getAffectedRow()) {
+                            case Constants.ZERO, Constants.ONE -> player2;
+                            case Constants.TWO, Constants.THREE -> player1;
+                            default -> currentPlayer;
+                        };
+
+        ArrayList<Card> affectedRow = switch (action.getAffectedRow()) {
+                                        case Constants.ZERO -> player2.getCardsInBackRow();
+                                        case Constants.ONE -> player2.getCardsInFrontRow();
+                                        case Constants.TWO -> player1.getCardsInFrontRow();
+                                        case Constants.THREE -> player1.getCardsInBackRow();
+                                        default -> new ArrayList<>();
+                                    };
+
+        Card hero = currentPlayer.getCurrentHero();
+
+        System.out.println("Attacking hero is: " + hero.getName());
+
+        if (hero.getMana() > currentPlayer.getMana()) {
+            throwException(Exceptions.NOT_ENOUGH_MANA_FOR_HERO, action);
+            return;
+        }
+
+        if (hero.hasAttackedThisTurn()) {
+            throwException(Exceptions.HERO_ALREADY_ATTACKED, action);
+            return;
+        }
+
+        if ((hero.getName().matches(CardNames.LORD_ROYCE)
+            || hero.getName().matches(CardNames.EMPRESS_THORINA))
+            && target.equals(currentPlayer)) {
+
+            throwException(Exceptions.ROW_DOES_NOT_BELONG_TO_ENEMY, action);
+            return;
+        }
+
+        if ((hero.getName().matches(CardNames.GENERAL_KOCIORAW)
+            || hero.getName().matches(CardNames.KING_MUDFACE))
+            && !target.equals(currentPlayer)) {
+
+            throwException(Exceptions.ROW_IS_NOT_OWN, action);
+            return;
+        }
+
+        heroAbility(hero, affectedRow);
+        currentPlayer.subtractMana(hero.getMana());
+    }
+
+    public void heroAbility(Card hero, ArrayList<Card> affectedRow) {
+        switch (hero.getName()) {
+            case CardNames.LORD_ROYCE -> abilityManager.subZero(hero, affectedRow);
+            case CardNames.EMPRESS_THORINA -> abilityManager.lowBlow(hero, affectedRow);
+            case CardNames.KING_MUDFACE -> abilityManager.earthBorn(hero, affectedRow);
+            case CardNames.GENERAL_KOCIORAW -> abilityManager.bloodThirst(hero, affectedRow);
+        }
+    }
+
+    /**
+     *
+     * @param cards     list of cards to be parsed to .json
+     * @return          ArrayNode with the list's cards
+     */
     public ArrayNode createCardsArrayNode(final ArrayList<Card> cards) {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayNode cardList = objectMapper.createArrayNode();
@@ -310,17 +685,39 @@ public final class GameManager {
         return cardList;
     }
 
-    public void getPlayerDeck(ObjectNode actionOutput, ActionsInput action, Player player) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     * @param player            target player
+     */
+    public void getPlayerDeck(final ObjectNode actionOutput,
+                              final ActionsInput action,
+                              final Player player) {
+
         actionOutput.put("playerIdx", action.getPlayerIdx());
         actionOutput.set("output", createCardsArrayNode(player.getCurrentDeck()));
     }
 
-    public void getCardsInHand(ObjectNode actionOutput, ActionsInput action, Player player) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     * @param player            target player
+     */
+    public void getCardsInHand(final ObjectNode actionOutput,
+                               final ActionsInput action,
+                               final Player player) {
+
         actionOutput.put("playerIdx", action.getPlayerIdx());
         actionOutput.set("output", createCardsArrayNode(player.getCardsInHand()));
     }
 
-    public void getCardsOnTable(ObjectNode actionOutput) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     */
+    public void getCardsOnTable(final ObjectNode actionOutput) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         ArrayNode otherPlayerBackRow = createCardsArrayNode(player2.getCardsInBackRow());
@@ -329,97 +726,158 @@ public final class GameManager {
         ArrayNode startingPlayerBackRow = createCardsArrayNode(player1.getCardsInBackRow());
 
         ArrayNode table = objectMapper.createArrayNode();
-        table.add(otherPlayerBackRow).add(otherPlayerFrontRow).add(startingPlayerFrontRow).add(startingPlayerBackRow);
+        table.add(otherPlayerBackRow)
+             .add(otherPlayerFrontRow)
+             .add(startingPlayerFrontRow)
+             .add(startingPlayerBackRow);
 
         actionOutput.set("output", table);
     }
 
-    public void getPlayerTurn(ObjectNode actionOutput) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     */
+    public void getPlayerTurn(final ObjectNode actionOutput) {
         actionOutput.put("output", currentPlayer.equals(player1) ? 1 : 2);
     }
 
-    public void getPlayerHero(ObjectNode actionOutput, ActionsInput action, Player player) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     * @param player            target player
+     */
+    public void getPlayerHero(final ObjectNode actionOutput,
+                              final ActionsInput action,
+                              final Player player) {
+
         ObjectNode hero = getCardNode(player.getCurrentHero());
 
         actionOutput.put("playerIdx", action.getPlayerIdx());
         actionOutput.set("output", hero);
     }
 
-    public void getPlayerMana(ObjectNode actionOutput, ActionsInput action, Player player) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     * @param player            target player
+     */
+    public void getPlayerMana(final ObjectNode actionOutput,
+                              final ActionsInput action,
+                              final Player player) {
+
         actionOutput.put("output", player.getMana());
         actionOutput.put("playerIdx", action.getPlayerIdx());
     }
 
-    public void getEnvironmentCardsInHand(ObjectNode actionOutput, ActionsInput action, Player player) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     * @param player            target player
+     */
+    public void getEnvironmentCardsInHand(final ObjectNode actionOutput,
+                                          final ActionsInput action,
+                                          final Player player) {
+
         ArrayList<Card> environmentCards = new ArrayList<>();
         for (Card card : player.getCardsInHand()) {
-            if (player.getCardType(card.getName()) == 2)
+            if (player.getCardType(card.getName()) == 2) {
                 environmentCards.add(card);
+            }
         }
 
         actionOutput.put("playerIdx", action.getPlayerIdx());
         actionOutput.set("output", createCardsArrayNode(environmentCards));
     }
 
-    public void getCardAtPosition(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     * @param action            current action
+     */
+    public void getCardAtPosition(final ObjectNode actionOutput, final ActionsInput action) {
         int x = action.getX();
         int y = action.getY();
 
-        int startingPlayerIndex = currentSession.getStartGame().getStartingPlayer();
-        Player startingPlayer = (startingPlayerIndex == 1) ? player1 : player2;
-        Player otherPlayer = (startingPlayer.equals(player1)) ? player2 : player1;
-
         ArrayList<Card> row;
 
-        switch (x) {
-            case Constants.ZERO -> row = otherPlayer.getCardsInBackRow();
-            case Constants.ONE -> row = otherPlayer.getCardsInFrontRow();
-            case Constants.TWO -> row = startingPlayer.getCardsInFrontRow();
-            case Constants.THREE -> row = startingPlayer.getCardsInBackRow();
-            default -> row = new ArrayList<>();
-        }
+        row = switch (x) {
+            case Constants.ZERO -> (player2.getCardsInBackRow());
+            case Constants.ONE -> (player2.getCardsInFrontRow());
+            case Constants.TWO -> (player1.getCardsInFrontRow());
+            case Constants.THREE -> (player1.getCardsInBackRow());
+            default -> new ArrayList<>();
+        };
+
+        actionOutput.put("x", x);
+        actionOutput.put("y", y);
 
         if (isCardOnRow(y, row)) {
-            System.out.println("Card at pos x = " + x + " y = " + y + " is " + row.get(y).getName());
-            printCardAtPosition(actionOutput, row.get(y), x, y);
+            System.out.println("Card at pos x = " + x + " y = " + y + " is "
+                                + row.get(y).getName());
+
+            ObjectNode cardNode = getCardNode(row.get(y));
+            actionOutput.set("output", cardNode);
+        } else {
+            actionOutput.put("output", Exceptions.NO_CARD_AT_POSITION);
         }
-        else
-            throwException(Exceptions.NO_CARD_AT_POSITION, action);
     }
 
-    public void getFrozenCardsOnTable(ObjectNode actionOutput) {
+    /**
+     *
+     * @param actionOutput      ObjectNode for printing data in .json format
+     */
+    public void getFrozenCardsOnTable(final ObjectNode actionOutput) {
         ObjectMapper objectMapper = new ObjectMapper();
         ArrayNode node = objectMapper.createArrayNode();
 
-        for (Card card : player2.getCardsInBackRow())
-            if (card.isStunned())
+        for (Card card : player2.getCardsInBackRow()) {
+            if (card.isStunned()) {
                 node.add(getCardNode(card));
+            }
+        }
 
-        for (Card card : player2.getCardsInFrontRow())
-            if (card.isStunned())
+        for (Card card : player2.getCardsInFrontRow()) {
+            if (card.isStunned()) {
                 node.add(getCardNode(card));
+            }
+        }
 
-        for (Card card : player1.getCardsInFrontRow())
-            if (card.isStunned())
+        for (Card card : player1.getCardsInFrontRow()) {
+            if (card.isStunned()) {
                 node.add(getCardNode(card));
+            }
+        }
 
-        for (Card card : player1.getCardsInBackRow())
-            if (card.isStunned())
+        for (Card card : player1.getCardsInBackRow()) {
+            if (card.isStunned()) {
                 node.add(getCardNode(card));
+            }
+        }
 
         actionOutput.set("output", node);
     }
 
-    public ObjectNode getCardNode(Card card) {
+    /**
+     *
+     * @param card      card whose values are to be parsed to .json
+     * @return          ObjectNode with the card's values
+     */
+    public ObjectNode getCardNode(final Card card) {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode cardNode = objectMapper.createObjectNode();
 
-        if (currentPlayer.getCardType(card.getName()) == Constants.ONE)
+        if (currentPlayer.getCardType(card.getName()) == Constants.ONE) {
             cardNode.put("health", card.getHealth())
                     .put("attackDamage", card.getAttackDamage());
+        }
 
-        if (currentPlayer.getCardType(card.getName()) == Constants.THREE)
+        if (currentPlayer.getCardType(card.getName()) == Constants.THREE) {
             cardNode.put("health", card.getHealth());
+        }
 
         cardNode.put("mana", card.getMana())
                 .put("description", card.getDescription())
@@ -429,70 +887,178 @@ public final class GameManager {
         return cardNode;
     }
 
-    private ArrayNode getCardColors(Card card) {
+    /**
+     *
+     * @param card      card in question
+     * @return          the colors
+     */
+    private ArrayNode getCardColors(final Card card) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         ArrayNode colors = objectMapper.createArrayNode();
-        for (String color : card.getColors())
+        for (String color : card.getColors()) {
             colors.add(color);
+        }
 
         return colors;
     }
 
-    public boolean isCardOnRow(int index, ArrayList<Card> row) {
+    /**
+     *
+     * @param index     supposed card index
+     * @param row       target row
+     * @return          true if card is on row
+     *                  false otherwise
+     */
+    public boolean isCardOnRow(final int index, final ArrayList<Card> row) {
         return !row.isEmpty() && (index < row.size());
     }
 
-    public void printCardAtPosition(ObjectNode actionOutput, Card card, int x, int y) {
-        actionOutput.put("x", x);
-        actionOutput.put("y", y);
-
-        ObjectNode cardNode = getCardNode(card);
-        actionOutput.set("output", cardNode);
-    }
-
-    public void environmentCardOnTable(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void environmentCardOnTable(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("error", Exceptions.ENVIRONMENT_CARD_ON_TABLE);
         actionOutput.put("handIdx", action.getHandIdx());
     }
 
-    public void notEnoughManaToPlaceCard(ObjectNode actionOutput, ActionsInput action) {
+    public void getTotalGamesPlayed(final ObjectNode actionOutput) {
+        actionOutput.put("output", playerOneWins + playerTwoWins);
+    }
+
+    public void getPlayerOneWins(final ObjectNode actionOutput) {
+        actionOutput.put("output", playerOneWins);
+    }
+
+    public void getPlayerTwoWins(final ObjectNode actionOutput) {
+        actionOutput.put("output", playerTwoWins);
+    }
+
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void notEnoughManaToPlaceCard(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("error", Exceptions.NOT_ENOUGH_MANA_TO_PLACE_CARD);
         actionOutput.put("handIdx", action.getHandIdx());
     }
 
-    public void rowIsFull(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void rowIsFull(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("error", Exceptions.ROW_IS_FULL);
         actionOutput.put("handIdx", action.getHandIdx());
     }
 
-    public void cardNotTypeEnvironment(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void cardNotTypeEnvironment(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("handIdx", action.getHandIdx());
         actionOutput.put("affectedRow", action.getAffectedRow());
         actionOutput.put("error", Exceptions.CARD_NOT_TYPE_ENVIRONMENT);
     }
 
-    public void notEnoughManaEnvironment(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void notEnoughManaEnvironment(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("handIdx", action.getHandIdx());
         actionOutput.put("affectedRow", action.getAffectedRow());
         actionOutput.put("error", Exceptions.NOT_ENOUGH_MANA_ENVIRONMENT);
     }
 
-    public void rowNotFromEnemy(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void rowNotFromEnemy(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("handIdx", action.getHandIdx());
         actionOutput.put("affectedRow", action.getAffectedRow());
         actionOutput.put("error", Exceptions.ROW_NOT_FROM_ENEMY);
     }
 
-    public void noStealRowFull(ObjectNode actionOutput, ActionsInput action) {
+    /**
+     *
+     * @param actionOutput  ObjectNode for printing data in .json format
+     * @param action        current action
+     */
+    public void noStealRowFull(final ObjectNode actionOutput, final ActionsInput action) {
         actionOutput.put("handIdx", action.getHandIdx());
         actionOutput.put("affectedRow", action.getAffectedRow());
         actionOutput.put("error", Exceptions.NO_STEAL_ROW_FULL);
     }
 
-    public void noCardAtPosition(ObjectNode actionOutput, ActionsInput action) {
-        actionOutput.put("x", action.getX());
-        actionOutput.put("y", action.getY());
-        actionOutput.put("error", Exceptions.NO_CARD_AT_POSITION);
+    public void printCardAttackDebug(final ObjectNode actionOutput, final ActionsInput action) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        ObjectNode cardAttacker = objectMapper.createObjectNode();
+        ObjectNode cardAttacked = objectMapper.createObjectNode();
+
+        cardAttacker.put("x", action.getCardAttacker().getX());
+        cardAttacker.put("y", action.getCardAttacker().getY());
+        actionOutput.set("cardAttacker", cardAttacker);
+
+        if (!action.getCommand().matches(Commands.USE_ATTACK_HERO)) {
+            cardAttacked.put("x", action.getCardAttacked().getX());
+            cardAttacked.put("y", action.getCardAttacked().getY());
+            actionOutput.set("cardAttacked", cardAttacked);
+        }
+    }
+
+    public void attackOwnCard(final ObjectNode actionOutput, final ActionsInput action) {
+        printCardAttackDebug(actionOutput, action);
+        actionOutput.put("error", Exceptions.ATTACK_OWN_CARD);
+    }
+
+    public void cardAlreadyAttacked(final ObjectNode actionOutput, final ActionsInput action) {
+        printCardAttackDebug(actionOutput, action);
+        actionOutput.put("error", Exceptions.CARD_ALREADY_ATTACKED);
+    }
+
+    public void frozenAttacker(final ObjectNode actionOutput, final ActionsInput action) {
+        printCardAttackDebug(actionOutput, action);
+        actionOutput.put("error", Exceptions.FROZEN_ATTACKER);
+    }
+
+    public void tankCardNotAttacked(final ObjectNode actionOutput, final ActionsInput action) {
+        printCardAttackDebug(actionOutput, action);
+        actionOutput.put("error", Exceptions.TANK_CARD_NOT_ATTACKED);
+    }
+
+    public void cardNotOwn(final ObjectNode actionOutput, final ActionsInput action) {
+        printCardAttackDebug(actionOutput, action);
+        actionOutput.put("error", Exceptions.CARD_NOT_OWN);
+    }
+
+    public void notEnoughManaForHero(final ObjectNode actionOutput, final ActionsInput action) {
+        actionOutput.put("affectedRow", action.getAffectedRow());
+        actionOutput.put("error", Exceptions.NOT_ENOUGH_MANA_FOR_HERO);
+    }
+
+    public void heroAlreadyAttacked(final ObjectNode actionOutput, final ActionsInput action) {
+        actionOutput.put("affectedRow", action.getAffectedRow());
+        actionOutput.put("error", Exceptions.HERO_ALREADY_ATTACKED);
+    }
+
+    public void rowDoesNotBelongToEnemy(final ObjectNode actionOutput, final ActionsInput action) {
+        actionOutput.put("affectedRow", action.getAffectedRow());
+        actionOutput.put("error", Exceptions.ROW_DOES_NOT_BELONG_TO_ENEMY);
+    }
+
+    public void rowIsNotOwn(final ObjectNode actionOutput, final ActionsInput action) {
+        actionOutput.put("affectedRow", action.getAffectedRow());
+        actionOutput.put("error", Exceptions.ROW_IS_NOT_OWN);
     }
 }

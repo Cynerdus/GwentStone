@@ -19,6 +19,8 @@ public final class Constants {
     public static final int FIFTEEN = 15;
     public static final int SIXTEEN = 16;
     public static final int SEVENTEEN = 17;
+    public static final int EIGHTEEN = 18;
+    public static final int NINETEEN = 19;
     public static final int THIRTY = 30;
 
     private Constants() { }

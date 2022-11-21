@@ -21,5 +21,11 @@ public final class Commands {
     public static final String PLACE_CARD = "placeCard";
     public static final String USE_ENVIRONMENT_CARD = "useEnvironmentCard";
 
+    public static final String CARD_USES_ATTACK = "cardUsesAttack";
+    public static final String CARD_USES_ABILITY = "cardUsesAbility";
+    public static final String USE_ATTACK_HERO = "useAttackHero";
+
+    public static final String USE_HERO_ABILITY = "useHeroAbility";
+
     private Commands() { }
 }
